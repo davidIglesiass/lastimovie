@@ -1,50 +1,85 @@
-import Slider from '../components/Slider'
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import MovieGrid from '../components/MovieGrid'
+import ApiKeyWarning from '../components/ApiKeyWarning'
+import { hasApiKey, getTrendingMovies, getPopularMovies, searchMovies, posterUrl } from '../api/tmdb'
 
 function Home() {
-    const imgs = [
-        {
-            src: "/img/woman.webp",
-            alt: "women img"
-        },
-        {
-            src: "/img/sunset.webp",
-            alt: "sunset img"
-        },
-        {
-            src: "/img/anime.jpg",
-            alt: "anime img"
-        }
-    ]
+  const [featured, setFeatured] = useState(null)
+  const [movies, setMovies] = useState([])
+  const [query, setQuery] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (!hasApiKey()) {
+      setLoading(false)
+      return
+    }
+    Promise.all([getTrendingMovies(), getPopularMovies()])
+      .then(([trendingRes, popularRes]) => {
+        setFeatured(trendingRes.results[0] ?? null)
+        setMovies(popularRes.results)
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const handleSearch = async (e) => {
+    e.preventDefault()
+    if (!query.trim()) return
+    setLoading(true)
+    try {
+      const res = await searchMovies(query)
+      setMovies(res.results)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (!hasApiKey()) {
     return (
-        <>
-            <div className="container mt-5">
-                <h1 className="mb-5 text-center text-gray">Bienvenido...</h1>
-                <Slider images={imgs} id="SliderHomeImgs" />
-                <div className="row mt-5">
-                    <div className="col">
-                        <h3 className="mb-3 text-center text-gray">Lorem ipsum dolor sit amet.</h3>
-                        <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Sint obcaecati magnam, aut error perspiciatis ea iusto amet temporibus cum ducimus odit officia distinctio eius consequatur veniam, esse libero. Ad, inventore.</p>
-                        <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolorem doloremque aspernatur similique officia consequuntur tempore nam accusantium nihil vel fugit! Architecto nam tempora iure quibusdam adipisci qui id fugit! Eius, dignissimos! Corrupti quisquam impedit omnis suscipit doloribus vero placeat consectetur?</p>
-                        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Repudiandae culpa sint obcaecati incidunt aliquam sequi porro similique, esse explicabo exercitationem! Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit quos beatae facilis dolor. Voluptatum incidunt, quasi ea doloribus atque cum similique impedit nesciunt ipsam quas numquam unde repudiandae? Expedita, aliquid!</p>
-                    </div>
-                    <div className="col">
-                        <img className="w-100" src="/img/woman.webp" alt="woman img" />
-                    </div>
-                </div>
-                <div className="row mt-5">
-                    <div className="col">
-                        <img className="w-100" src="/img/woman.webp" alt="woman img" />
-                    </div>
-                    <div className="col">
-                        <h3 className="mb-3 text-center text-gray">Lorem ipsum dolor sit amet.</h3>
-                        <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Sint obcaecati magnam, aut error perspiciatis ea iusto amet temporibus cum ducimus odit officia distinctio eius consequatur veniam, esse libero. Ad, inventore.</p>
-                        <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolorem doloremque aspernatur similique officia consequuntur tempore nam accusantium nihil vel fugit! Architecto nam tempora iure quibusdam adipisci qui id fugit! Eius, dignissimos! Corrupti quisquam impedit omnis suscipit doloribus vero placeat consectetur?</p>
-                        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Repudiandae culpa sint obcaecati incidunt aliquam sequi porro similique, esse explicabo exercitationem! Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit quos beatae facilis dolor. Voluptatum incidunt, quasi ea doloribus atque cum similique impedit nesciunt ipsam quas numquam unde repudiandae? Expedita, aliquid!</p>
-                    </div>
-                </div>
-            </div>
-        </>
-    );
+      <div className="page">
+        <ApiKeyWarning />
+      </div>
+    )
+  }
+
+  return (
+    <>
+      {featured && (
+        <div
+          className="hero"
+          style={{ backgroundImage: `url(${posterUrl(featured.backdrop_path ?? featured.poster_path, 'original')})` }}
+        >
+          <div className="hero-content">
+            <h1 className="hero-title">{featured.title}</h1>
+            <p className="hero-meta">⭐ {featured.vote_average?.toFixed(1)} · {featured.release_date?.slice(0, 4)}</p>
+            <p className="hero-overview">{featured.overview}</p>
+            <Link to={`/pelicula/${featured.id}`} className="hero-link">Ver detalle</Link>
+          </div>
+        </div>
+      )}
+
+      <div className="page">
+        <form className="search" onSubmit={handleSearch}>
+          <input
+            type="search"
+            className="search-input"
+            placeholder="Buscar películas..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <button className="search-btn" type="submit">Buscar</button>
+        </form>
+
+        {error && <p className="status-text">{error}</p>}
+        {loading ? <p className="status-text">Cargando...</p> : <MovieGrid movies={movies} />}
+      </div>
+    </>
+  )
 }
 
 export default Home
