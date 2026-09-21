@@ -1,12 +1,24 @@
-# React + Vite
+# LastiMovie
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Catálogo de películas con React 19 + React Router + Bootstrap, usando la API de [TMDB](https://www.themoviedb.org/).
 
-Currently, two official plugins are available:
+## Arranque
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```bash
+npm install
+npm run dev
+```
 
-## Expanding the ESLint configuration
+Necesitás una API key gratis de TMDB (themoviedb.org/settings/api). Creá un archivo `.env` en la raíz del proyecto con:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```
+VITE_TMDB_API_KEY=tu-api-key
+```
+
+Sin esa variable, la app muestra un aviso en vez de romper.
+
+## Funcionalidad
+
+- Inicio: carrusel de tendencias + grid de populares
+- Búsqueda por título
+- Página de detalle por película (`/pelicula/:id`): sinopsis, rating, reparto
