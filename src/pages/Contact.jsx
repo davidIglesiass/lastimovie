@@ -2,13 +2,11 @@ import ContactForm from "../components/ContactForm";
 
 function Contact() {
     return (
-        <>
-            <div className="container mt-5">
-                <h1 className="text-center text-dark">Pagina de contacto</h1>
-                <p>Por favor llena el siguiente formulario...</p>
-                <ContactForm />
-            </div>
-        </>
+        <div className="page">
+            <h1 className="page-title">Contacto</h1>
+            <p className="status-text" style={{ padding: 0, marginBottom: '1.5rem' }}>Por favor llená el siguiente formulario...</p>
+            <ContactForm />
+        </div>
     );
 }
 
